@@ -570,7 +570,7 @@ const allControls = document.querySelectorAll(
 );
 
 // ── Restore saved MAC ─────────────────────────────────
-const savedMac = localStorage.getItem(STORAGE_KEY) || '';
+const savedMac = localStorage.getItem(STORAGE_KEY) || 'fce8c0a5b350';
 if (savedMac) {
   macInput.value    = savedMac;
   macInput.disabled = true;
