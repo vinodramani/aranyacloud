@@ -471,12 +471,6 @@
     <span id="statusText">Not connected</span>
   </div>
 
-  <!-- Mode selection -->
-  <div style="display:flex;gap:8px;margin-bottom:14px;">
-    <button id="btnModeCloud" class="btn btn-primary" style="flex:1;font-size:15px;" onclick="setMode('cloud')">&#9729; Cloud</button>
-    <button id="btnModeLocal" class="btn btn-primary" style="flex:1;font-size:15px;background:linear-gradient(135deg,#00acc1,#006064);box-shadow:0 4px 14px rgba(0,172,193,0.4);" onclick="setMode('local')">&#8962; Local</button>
-  </div>
-
   <!-- Connect card -->
   <div class="card">
     <div class="card-title">Connection</div>
@@ -495,15 +489,6 @@
     <div id="logLine">—</div>
   </div>
 
-  <!-- Local mode info card (shown in local mode) -->
-  <div id="localCard" class="card" style="display:none;">
-    <div class="card-title">Local Device</div>
-    <div style="font-family:var(--mono);font-size:14px;color:var(--text-dim);margin-bottom:10px;">Connecting to: <span style="color:var(--accent2);">192.168.1.200</span></div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-primary" id="btnLocalConnect" style="flex:1" onclick="handleLocalConnect()">Connect</button>
-    </div>
-    <div id="localLogLine" style="font-family:var(--mono);font-size:14px;color:var(--text-dim);text-align:center;padding:6px;min-height:22px;">—</div>
-  </div>
 
   <!-- Brightness card -->
   <div class="card">
@@ -563,7 +548,7 @@
     </div>
   </div>
 
-  <footer>AranyaCloud v2.0 &nbsp;·&nbsp; MQTT over WSS</footer>
+  <footer>AranyaCloud &nbsp;·&nbsp; Cloud Control via MQTT</footer>
 </div>
 
 <script>
@@ -573,8 +558,6 @@ const BROKER_PORT = 8084;   // WSS port on EMQX serverless
 const BROKER_USER = 'AranyaAdmin';
 const BROKER_PASS = '123Smart@';
 const STORAGE_KEY = 'aranyacloud_mac';
-const LOCAL_IP    = '192.168.1.200';
-const LOCAL_PORT  = 80;
 
 // ── State ─────────────────────────────────────────────
 let mqttClient      = null;
@@ -583,8 +566,7 @@ let deviceOnline    = false;
 let topicCmd        = '';
 let topicState      = '';
 let topicStatus     = '';
-let currentMode     = localStorage.getItem('aranyacloud_mode') || 'cloud';
-let localConnected  = false;
+
 
 // ── DOM refs ──────────────────────────────────────────
 const macInput   = document.getElementById('macInput');
@@ -614,9 +596,6 @@ btnChange.addEventListener('click', () => {
   macInput.focus();
   btnChange.style.display = 'none';
 });
-
-// Apply saved mode on page load
-setMode(currentMode);
 
 // ── Build topics ──────────────────────────────────────
 function buildTopics(mac) {
@@ -674,7 +653,7 @@ function connect(mac) {
     if (topic === topicStatus) {
       deviceOnline = msg === 'online';
       if (deviceOnline) {
-        setStatus('Device connected — Cloud', 'online');
+        setStatus('Device online', 'online');
         enableControls(true);
         logoRing.classList.add('active');
         setLog('Ready');
@@ -724,9 +703,8 @@ function disconnect() {
   if (mqttClient) { mqttClient.end(true); mqttClient = null; }
 }
 
-// ── Publish — routes to MQTT or local HTTP ───────────
+// ── Publish ───────────────────────────────────────────
 function publish(cmd) {
-  if (currentMode === 'local') { sendLocal(cmd); return; }
   if (!mqttClient || !brokerConnected) return;
   mqttClient.publish(topicCmd, cmd, { qos: 1 });
   setLog('Sent: ' + cmd);
@@ -795,96 +773,7 @@ function setLog(msg) {
   logLine.textContent = msg;
 }
 
-// ── Mode switching ────────────────────────────────────
-function setMode(mode) {
-  currentMode = mode;
-  localStorage.setItem('aranyacloud_mode', mode);
 
-  const cloudCard  = document.querySelector('.card');  // first card = connect card
-  const localCard  = document.getElementById('localCard');
-  const modeCloud  = document.getElementById('btnModeCloud');
-  const modeLocal  = document.getElementById('btnModeLocal');
-
-  if (mode === 'cloud') {
-    cloudCard.style.display  = '';
-    localCard.style.display  = 'none';
-    modeCloud.style.opacity  = '1.0';
-    modeLocal.style.opacity  = '0.5';
-    if (localConnected) disconnectLocal();
-    enableControls(false);
-    clearActiveEffect();
-    setStatus('Not connected', '');
-  } else {
-    cloudCard.style.display  = 'none';
-    localCard.style.display  = '';
-    modeCloud.style.opacity  = '0.5';
-    modeLocal.style.opacity  = '1.0';
-    if (brokerConnected) disconnect();
-    enableControls(false);
-    clearActiveEffect();
-    setStatus('Local: ' + LOCAL_IP, 'warn');
-  }
-}
-
-// ── Local HTTP connect ────────────────────────────────
-function handleLocalConnect() {
-  if (localConnected) {
-    disconnectLocal();
-    return;
-  }
-  const btn = document.getElementById('btnLocalConnect');
-  btn.textContent = 'Connecting…';
-  btn.disabled    = true;
-  document.getElementById('localLogLine').textContent = 'Connecting to ' + LOCAL_IP + '…';
-
-  fetch('http://' + LOCAL_IP + ':' + LOCAL_PORT + '/state', { signal: AbortSignal.timeout(5000) })
-    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(data => {
-      localConnected = true;
-      btn.textContent = 'Disconnect';
-      btn.disabled    = false;
-      setStatus('Device connected — Local', 'online');
-      enableControls(true);
-      logoRing.classList.add('active');
-      if (data.brightness !== undefined) {
-        seekBri.value = data.brightness;
-        briVal.textContent = data.brightness;
-      }
-      document.getElementById('localLogLine').textContent = 'Ready';
-    })
-    .catch(e => {
-      localConnected = false;
-      btn.textContent = 'Connect';
-      btn.disabled    = false;
-      setStatus('Cannot reach ' + LOCAL_IP, 'offline');
-      document.getElementById('localLogLine').textContent = 'Error: ' + e.message + ' — ensure phone is on same WiFi';
-    });
-}
-
-function disconnectLocal() {
-  localConnected = false;
-  const btn = document.getElementById('btnLocalConnect');
-  btn.textContent = 'Connect';
-  btn.disabled    = false;
-  enableControls(false);
-  logoRing.classList.remove('active');
-  setStatus('Local: ' + LOCAL_IP, 'warn');
-  document.getElementById('localLogLine').textContent = 'Disconnected';
-  clearActiveEffect();
-}
-
-// ── Send local HTTP command ───────────────────────────
-function sendLocal(cmd) {
-  if (!localConnected) return;
-  fetch('http://' + LOCAL_IP + ':' + LOCAL_PORT + '/cmd?v=' + encodeURIComponent(cmd), { signal: AbortSignal.timeout(3000) })
-    .then(() => { document.getElementById('localLogLine').textContent = 'Sent: ' + cmd; })
-    .catch(e => {
-      localConnected = false;
-      setStatus('Connection lost', 'offline');
-      enableControls(false);
-      document.getElementById('localLogLine').textContent = 'Error: ' + e.message;
-    });
-}
 </script>
 </body>
 </html>
