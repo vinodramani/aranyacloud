@@ -18,7 +18,7 @@
     --glow:      rgba(108,99,255,0.35);
     --glow2:     rgba(0,212,255,0.25);
     --text:      #d0d0f0;
-    --text-dim:  #5a5a8a;
+    --text-dim:  #9090b8;
     --online:    #00e676;
     --offline:   #ff5252;
     --warn:      #ffab40;
@@ -114,7 +114,7 @@
   }
 
   h1 {
-    font-size: 28px;
+    font-size: 36px;
     font-weight: 700;
     letter-spacing: 3px;
     text-transform: uppercase;
@@ -126,7 +126,7 @@
 
   .subtitle {
     font-family: var(--mono);
-    font-size: 11px;
+    font-size: 14px;
     color: var(--text-dim);
     letter-spacing: 2px;
     text-transform: uppercase;
@@ -144,7 +144,7 @@
     border-radius: 8px;
     margin-bottom: 16px;
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: 15px;
   }
 
   .status-dot {
@@ -170,7 +170,7 @@
   }
 
   .card-title {
-    font-size: 11px;
+    font-size: 15px;
     font-family: var(--mono);
     letter-spacing: 2px;
     color: var(--text-dim);
@@ -207,8 +207,8 @@
     border-radius: 8px;
     color: var(--text);
     font-family: var(--mono);
-    font-size: 13px;
-    padding: 10px 12px;
+    font-size: 16px;
+    padding: 12px 14px;
     outline: none;
     transition: border-color 0.3s, box-shadow 0.3s;
     letter-spacing: 1px;
@@ -228,13 +228,13 @@
   .btn {
     font-family: var(--font);
     font-weight: 600;
-    font-size: 13px;
+    font-size: 16px;
     letter-spacing: 1px;
     text-transform: uppercase;
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    padding: 10px 16px;
+    padding: 12px 18px;
     transition: all 0.2s;
     position: relative;
     overflow: hidden;
@@ -264,13 +264,21 @@
   }
 
   .btn-ghost {
-    background: var(--bg3);
-    color: var(--text-dim);
-    border: 1px solid var(--border);
+    background: #f9a825;
+    color: #000000;
+    border: 1px solid #fdd835;
   }
-  .btn-ghost:hover { border-color: var(--accent); color: var(--text); }
+  .btn-ghost:hover { background: #fbc02d; border-color: #ffee58; color: #000000; }
 
-  .btn-sm { padding: 7px 12px; font-size: 11px; }
+  /* Graded brightness buttons */
+  #btnDim    { background: linear-gradient(to bottom, #f9a825, #e65100); border-color: #ffa726; color: #000000; }
+  #btnBright { background: linear-gradient(to bottom, #ffee58, #f9a825); border-color: #ffee58; color: #000000; }
+  #btnFull   { background: linear-gradient(to bottom, #ffffff, #ffee58); border-color: #ffffff; color: #000000; }
+  #btnDim:hover    { background: linear-gradient(to bottom, #ffa726, #bf360c); }
+  #btnBright:hover { background: linear-gradient(to bottom, #fff176, #fbc02d); }
+  #btnFull:hover   { background: linear-gradient(to bottom, #ffffff, #fff176); }
+
+  .btn-sm { padding: 10px 14px; font-size: 15px; }
 
   .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
 
@@ -284,8 +292,8 @@
 
   .bri-label {
     font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-dim);
+    font-size: 17px;
+    color: #fdd835;
     white-space: nowrap;
     width: 28px;
     text-align: right;
@@ -294,24 +302,24 @@
   input[type="range"] {
     flex: 1;
     -webkit-appearance: none;
-    height: 4px;
-    background: var(--bg3);
-    border-radius: 2px;
+    height: 6px;
+    background: #4a3800;
+    border-radius: 3px;
     outline: none;
     position: relative;
   }
 
   input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 16px; height: 16px;
+    width: 18px; height: 18px;
     border-radius: 50%;
-    background: var(--accent2);
-    box-shadow: 0 0 8px var(--glow2);
+    background: #fdd835;
+    box-shadow: 0 0 8px rgba(253,216,53,0.6);
     cursor: pointer;
     transition: box-shadow 0.2s;
   }
   input[type="range"]::-webkit-slider-thumb:hover {
-    box-shadow: 0 0 14px var(--glow2);
+    box-shadow: 0 0 14px rgba(253,216,53,0.8);
   }
 
   .bri-presets {
@@ -327,13 +335,13 @@
   }
 
   .color-btn {
-    height: 44px;
+    height: 56px;
     border-radius: 8px;
     border: 1.5px solid transparent;
     cursor: pointer;
     font-family: var(--font);
     font-weight: 600;
-    font-size: 12px;
+    font-size: 20px;
     letter-spacing: 0.5px;
     transition: all 0.2s;
     position: relative;
@@ -360,14 +368,14 @@
   }
 
   .effect-btn {
-    height: 44px;
-    background: var(--bg3);
-    border: 1px solid var(--border);
+    height: 56px;
+    background: #006064;
+    border: 1px solid #00bcd4;
     border-radius: 8px;
-    color: var(--text-dim);
+    color: #000000;
     font-family: var(--font);
     font-weight: 600;
-    font-size: 12px;
+    font-size: 20px;
     letter-spacing: 0.5px;
     cursor: pointer;
     transition: all 0.2s;
@@ -384,25 +392,29 @@
   }
 
   .effect-btn:hover:not(:disabled) {
-    border-color: var(--accent);
-    color: var(--text);
-    box-shadow: 0 0 12px rgba(108,99,255,0.2);
+    background: #00838f;
+    border-color: #00e5ff;
+    color: #000000;
+    box-shadow: 0 0 12px rgba(0,212,255,0.3);
   }
   .effect-btn.active {
-    border-color: var(--accent2);
-    color: var(--accent2);
-    box-shadow: 0 0 12px var(--glow2);
-    background: rgba(0,212,255,0.07);
+    background: #00acc1;
+    border-color: #00e5ff;
+    color: #000000;
+    box-shadow: 0 0 12px rgba(0,212,255,0.4);
   }
   .effect-btn:active:not(:disabled) { transform: scale(0.96); }
-  .effect-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .effect-btn:disabled { opacity: 0.65; cursor: not-allowed; }
 
   .effect-btn.off-btn {
-    border-color: rgba(255,82,82,0.3);
-    color: #ff5252;
+    background: #b71c1c;
+    border-color: #ff5252;
+    color: #000000;
   }
   .effect-btn.off-btn:hover:not(:disabled) {
+    background: #c62828;
     border-color: #ff5252;
+    color: #000000;
     box-shadow: 0 0 12px rgba(255,82,82,0.3);
   }
 
@@ -421,7 +433,7 @@
   footer {
     text-align: center;
     font-family: var(--mono);
-    font-size: 10px;
+    font-size: 13px;
     color: var(--text-dim);
     padding-top: 8px;
     opacity: 0.5;
@@ -459,6 +471,12 @@
     <span id="statusText">Not connected</span>
   </div>
 
+  <!-- Mode selection -->
+  <div style="display:flex;gap:8px;margin-bottom:14px;">
+    <button id="btnModeCloud" class="btn btn-primary" style="flex:1;font-size:15px;" onclick="setMode('cloud')">&#9729; Cloud</button>
+    <button id="btnModeLocal" class="btn btn-primary" style="flex:1;font-size:15px;background:linear-gradient(135deg,#00acc1,#006064);box-shadow:0 4px 14px rgba(0,172,193,0.4);" onclick="setMode('local')">&#8962; Local</button>
+  </div>
+
   <!-- Connect card -->
   <div class="card">
     <div class="card-title">Connection</div>
@@ -477,6 +495,16 @@
     <div id="logLine">—</div>
   </div>
 
+  <!-- Local mode info card (shown in local mode) -->
+  <div id="localCard" class="card" style="display:none;">
+    <div class="card-title">Local Device</div>
+    <div style="font-family:var(--mono);font-size:14px;color:var(--text-dim);margin-bottom:10px;">Connecting to: <span style="color:var(--accent2);">192.168.1.200</span></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-primary" id="btnLocalConnect" style="flex:1" onclick="handleLocalConnect()">Connect</button>
+    </div>
+    <div id="localLogLine" style="font-family:var(--mono);font-size:14px;color:var(--text-dim);text-align:center;padding:6px;min-height:22px;">—</div>
+  </div>
+
   <!-- Brightness card -->
   <div class="card">
     <div class="card-title">Brightness</div>
@@ -485,9 +513,9 @@
       <input type="range" id="seekBrightness" min="0" max="255" value="50" disabled/>
     </div>
     <div class="bri-presets" style="justify-content:flex-end;">
-      <button class="btn btn-ghost btn-sm bri-preset" data-cmd="dim"    data-bri="30"  disabled>Dim</button>
-      <button class="btn btn-ghost btn-sm bri-preset" data-cmd="bright" data-bri="180" disabled>Bright</button>
-      <button class="btn btn-ghost btn-sm bri-preset" data-cmd="full"   data-bri="255" disabled>Full</button>
+      <button class="btn btn-ghost btn-sm bri-preset" id="btnDim"    data-cmd="dim"    data-bri="30"  disabled>Dim</button>
+      <button class="btn btn-ghost btn-sm bri-preset" id="btnBright" data-cmd="bright" data-bri="180" disabled>Bright</button>
+      <button class="btn btn-ghost btn-sm bri-preset" id="btnFull"   data-cmd="full"   data-bri="255" disabled>Full</button>
     </div>
   </div>
 
@@ -545,6 +573,8 @@ const BROKER_PORT = 8084;   // WSS port on EMQX serverless
 const BROKER_USER = 'AranyaAdmin';
 const BROKER_PASS = '123Smart@';
 const STORAGE_KEY = 'aranyacloud_mac';
+const LOCAL_IP    = '192.168.1.200';
+const LOCAL_PORT  = 80;
 
 // ── State ─────────────────────────────────────────────
 let mqttClient      = null;
@@ -553,6 +583,8 @@ let deviceOnline    = false;
 let topicCmd        = '';
 let topicState      = '';
 let topicStatus     = '';
+let currentMode     = localStorage.getItem('aranyacloud_mode') || 'cloud';
+let localConnected  = false;
 
 // ── DOM refs ──────────────────────────────────────────
 const macInput   = document.getElementById('macInput');
@@ -582,6 +614,9 @@ btnChange.addEventListener('click', () => {
   macInput.focus();
   btnChange.style.display = 'none';
 });
+
+// Apply saved mode on page load
+setMode(currentMode);
 
 // ── Build topics ──────────────────────────────────────
 function buildTopics(mac) {
@@ -639,7 +674,7 @@ function connect(mac) {
     if (topic === topicStatus) {
       deviceOnline = msg === 'online';
       if (deviceOnline) {
-        setStatus('Device online', 'online');
+        setStatus('Device connected — Cloud', 'online');
         enableControls(true);
         logoRing.classList.add('active');
         setLog('Ready');
@@ -689,8 +724,9 @@ function disconnect() {
   if (mqttClient) { mqttClient.end(true); mqttClient = null; }
 }
 
-// ── Publish ───────────────────────────────────────────
+// ── Publish — routes to MQTT or local HTTP ───────────
 function publish(cmd) {
+  if (currentMode === 'local') { sendLocal(cmd); return; }
   if (!mqttClient || !brokerConnected) return;
   mqttClient.publish(topicCmd, cmd, { qos: 1 });
   setLog('Sent: ' + cmd);
@@ -757,6 +793,97 @@ function setStatus(msg, state) {
 
 function setLog(msg) {
   logLine.textContent = msg;
+}
+
+// ── Mode switching ────────────────────────────────────
+function setMode(mode) {
+  currentMode = mode;
+  localStorage.setItem('aranyacloud_mode', mode);
+
+  const cloudCard  = document.querySelector('.card');  // first card = connect card
+  const localCard  = document.getElementById('localCard');
+  const modeCloud  = document.getElementById('btnModeCloud');
+  const modeLocal  = document.getElementById('btnModeLocal');
+
+  if (mode === 'cloud') {
+    cloudCard.style.display  = '';
+    localCard.style.display  = 'none';
+    modeCloud.style.opacity  = '1.0';
+    modeLocal.style.opacity  = '0.5';
+    if (localConnected) disconnectLocal();
+    enableControls(false);
+    clearActiveEffect();
+    setStatus('Not connected', '');
+  } else {
+    cloudCard.style.display  = 'none';
+    localCard.style.display  = '';
+    modeCloud.style.opacity  = '0.5';
+    modeLocal.style.opacity  = '1.0';
+    if (brokerConnected) disconnect();
+    enableControls(false);
+    clearActiveEffect();
+    setStatus('Local: ' + LOCAL_IP, 'warn');
+  }
+}
+
+// ── Local HTTP connect ────────────────────────────────
+function handleLocalConnect() {
+  if (localConnected) {
+    disconnectLocal();
+    return;
+  }
+  const btn = document.getElementById('btnLocalConnect');
+  btn.textContent = 'Connecting…';
+  btn.disabled    = true;
+  document.getElementById('localLogLine').textContent = 'Connecting to ' + LOCAL_IP + '…';
+
+  fetch('http://' + LOCAL_IP + ':' + LOCAL_PORT + '/state', { signal: AbortSignal.timeout(5000) })
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(data => {
+      localConnected = true;
+      btn.textContent = 'Disconnect';
+      btn.disabled    = false;
+      setStatus('Device connected — Local', 'online');
+      enableControls(true);
+      logoRing.classList.add('active');
+      if (data.brightness !== undefined) {
+        seekBri.value = data.brightness;
+        briVal.textContent = data.brightness;
+      }
+      document.getElementById('localLogLine').textContent = 'Ready';
+    })
+    .catch(e => {
+      localConnected = false;
+      btn.textContent = 'Connect';
+      btn.disabled    = false;
+      setStatus('Cannot reach ' + LOCAL_IP, 'offline');
+      document.getElementById('localLogLine').textContent = 'Error: ' + e.message + ' — ensure phone is on same WiFi';
+    });
+}
+
+function disconnectLocal() {
+  localConnected = false;
+  const btn = document.getElementById('btnLocalConnect');
+  btn.textContent = 'Connect';
+  btn.disabled    = false;
+  enableControls(false);
+  logoRing.classList.remove('active');
+  setStatus('Local: ' + LOCAL_IP, 'warn');
+  document.getElementById('localLogLine').textContent = 'Disconnected';
+  clearActiveEffect();
+}
+
+// ── Send local HTTP command ───────────────────────────
+function sendLocal(cmd) {
+  if (!localConnected) return;
+  fetch('http://' + LOCAL_IP + ':' + LOCAL_PORT + '/cmd?v=' + encodeURIComponent(cmd), { signal: AbortSignal.timeout(3000) })
+    .then(() => { document.getElementById('localLogLine').textContent = 'Sent: ' + cmd; })
+    .catch(e => {
+      localConnected = false;
+      setStatus('Connection lost', 'offline');
+      enableControls(false);
+      document.getElementById('localLogLine').textContent = 'Error: ' + e.message;
+    });
 }
 </script>
 </body>
