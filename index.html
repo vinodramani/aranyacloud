@@ -1,779 +1,860 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AranyaCloud</title>
-<script src="https://unpkg.com/mqtt@4.3.7/dist/mqtt.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>AranyaController V5</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap');
-
   :root {
-    --bg:        #080810;
-    --bg2:       #0e0e1a;
-    --bg3:       #14142a;
-    --border:    rgba(100,100,200,0.18);
-    --accent:    #6c63ff;
-    --accent2:   #00d4ff;
-    --glow:      rgba(108,99,255,0.35);
-    --glow2:     rgba(0,212,255,0.25);
-    --text:      #d0d0f0;
-    --text-dim:  #9090b8;
-    --online:    #00e676;
-    --offline:   #ff5252;
-    --warn:      #ffab40;
-    --radius:    12px;
-    --font:      'Rajdhani', sans-serif;
-    --mono:      'Share Tech Mono', monospace;
+    --bg:         #0a0e12;
+    --surface:    #111820;
+    --surface2:   #1a2330;
+    --border:     #1e2d3d;
+    --text:       #e8f0f8;
+    --muted:      #5a7a96;
+    --green:      #00e676;
+    --green-dim:  #00c853;
+    --red:        #ff3d57;
+    --cyan:       #00e5ff;
+    --yellow:     #ffd740;
+    --blue:       #448aff;
+    --orange:     #ff6d00;
+    --mono:       'Space Mono', monospace;
+    --sans:       'DM Sans', sans-serif;
   }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
+    font-family: var(--sans);
     background: var(--bg);
     color: var(--text);
-    font-family: var(--font);
     min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* Animated background grid */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(108,99,255,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(108,99,255,0.04) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Glow orbs */
-  body::after {
-    content: '';
-    position: fixed;
-    top: -200px; left: -200px;
-    width: 600px; height: 600px;
-    background: radial-gradient(circle, rgba(108,99,255,0.08) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-    animation: orbFloat 12s ease-in-out infinite;
-  }
-
-  @keyframes orbFloat {
-    0%, 100% { transform: translate(0,0); }
-    33%       { transform: translate(80px, 60px); }
-    66%       { transform: translate(-40px, 100px); }
-  }
-
-  .container {
-    position: relative;
-    z-index: 1;
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 20px 16px 40px;
+    padding: 16px;
+    padding-bottom: 40px;
   }
 
   /* ── Header ── */
-  header {
+  .header {
     text-align: center;
-    padding: 24px 0 20px;
+    margin-bottom: 20px;
+    padding-top: 12px;
   }
-
-  .logo {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 4px;
-  }
-
-  .logo-ring {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    border: 2px solid var(--accent);
-    box-shadow: 0 0 12px var(--glow), inset 0 0 8px rgba(108,99,255,0.2);
-    animation: ringPulse 3s ease-in-out infinite;
-    position: relative;
-  }
-
-  .logo-ring::after {
-    content: '';
-    position: absolute;
-    inset: 5px;
-    border-radius: 50%;
-    background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
-    opacity: 0.6;
-    animation: ringPulse 3s ease-in-out infinite reverse;
-  }
-
-  @keyframes ringPulse {
-    0%, 100% { box-shadow: 0 0 12px var(--glow), inset 0 0 8px rgba(108,99,255,0.2); }
-    50%       { box-shadow: 0 0 24px var(--glow), inset 0 0 14px rgba(108,99,255,0.35); }
-  }
-
-  h1 {
-    font-size: 36px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    background: linear-gradient(135deg, #fff 0%, var(--accent2) 50%, var(--accent) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .subtitle {
+  .header-title {
     font-family: var(--mono);
-    font-size: 14px;
-    color: var(--text-dim);
+    font-size: 18px;
+    color: var(--cyan);
     letter-spacing: 2px;
     text-transform: uppercase;
   }
-
-  /* ── Status bar ── */
-  .status-bar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 8px 16px;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    margin-bottom: 16px;
-    font-family: var(--mono);
-    font-size: 15px;
+  .header-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 3px;
+    letter-spacing: 1px;
   }
 
-  .status-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--text-dim);
-    transition: all 0.4s;
-    flex-shrink: 0;
-  }
-  .status-dot.online  { background: var(--online);  box-shadow: 0 0 8px var(--online); }
-  .status-dot.offline { background: var(--offline); box-shadow: 0 0 8px var(--offline); }
-  .status-dot.warn    { background: var(--warn);    box-shadow: 0 0 8px var(--warn); }
-
-  #statusText { color: var(--text-dim); transition: color 0.4s; }
-
-  /* ── Panel card ── */
+  /* ── Cards ── */
   .card {
-    background: var(--bg2);
+    background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin-bottom: 14px;
-  }
-
-  .card-title {
-    font-size: 15px;
-    font-family: var(--mono);
-    letter-spacing: 2px;
-    color: var(--text-dim);
-    text-transform: uppercase;
+    border-radius: 12px;
+    padding: 14px;
     margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
   }
-
-  .card-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  /* ── Connect section ── */
-  .connect-row {
-    display: flex;
-    gap: 8px;
+  .card-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
     margin-bottom: 10px;
   }
 
-  .mac-input-wrap {
-    position: relative;
-    flex: 1;
+  /* ── Setup screen ── */
+  #setupScreen { display: block; }
+  #mainScreen  { display: none; }
+
+  .setup-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--yellow);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .setup-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+  .setup-desc strong { color: var(--cyan); }
+
+  /* ── Status row ── */
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .indicator {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--red);
+    flex-shrink: 0;
+    box-shadow: 0 0 6px var(--red);
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .indicator.on {
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+  }
+  .indicator.warn {
+    background: var(--yellow);
+    box-shadow: 0 0 8px var(--yellow);
+  }
+  #statusText {
+    font-size: 13px;
+    color: var(--red);
+    font-family: var(--mono);
+    transition: color 0.3s;
+  }
+  #statusText.on   { color: var(--green); }
+  #statusText.warn { color: var(--yellow); }
+
+  /* ── Clock ── */
+  #tvDate {
+    font-size: 14px;
+    color: var(--muted);
+    font-family: var(--mono);
+    margin-bottom: 2px;
+  }
+  #tvTime {
+    font-family: var(--mono);
+    font-size: 32px;
+    color: var(--cyan);
+    letter-spacing: 2px;
+    margin-bottom: 12px;
   }
 
-  input[type="text"] {
+  /* ── Output grid ── */
+  .output-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .output-cell {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 6px;
+    text-align: center;
+  }
+  .output-cell .ol { font-size: 10px; color: var(--muted); letter-spacing: 1px; font-family: var(--mono); margin-bottom: 4px; }
+  .output-cell .ov {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--red);
+    transition: color 0.3s;
+  }
+  .output-cell .ov.on { color: var(--green); }
+
+  /* ── Buttons ── */
+  .btn {
+    display: block;
     width: 100%;
-    background: var(--bg3);
+    padding: 13px;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    margin-bottom: 8px;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn:last-child { margin-bottom: 0; }
+
+  .btn-cyan   { background: var(--cyan);    color: #0a0e12; }
+  .btn-green  { background: var(--green);   color: #0a0e12; }
+  .btn-yellow { background: var(--yellow);  color: #0a0e12; }
+  .btn-blue   { background: var(--blue);    color: #fff; }
+  .btn-red    { background: var(--red);     color: #fff; }
+  .btn-ghost  {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
+  .btn-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .btn-row .btn { margin-bottom: 0; }
+
+  /* ── Schedule slots ── */
+  .sched-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    margin-top: 4px;
+  }
+  .sched-title.light { color: var(--yellow); }
+  .sched-title.pump  { color: var(--blue); }
+
+  .slot-row {
+    display: flex;
+    align-items: center;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    gap: 10px;
+  }
+  .slot-info { flex: 1; min-width: 0; }
+  .slot-num  { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  .slot-val  { font-size: 13px; color: var(--text); font-family: var(--mono); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .slot-btns { display: flex; gap: 6px; flex-shrink: 0; }
+  .slot-btns .btn {
+    width: auto;
+    padding: 6px 12px;
+    font-size: 10px;
+    margin-bottom: 0;
+    border-radius: 6px;
+  }
+
+  /* ── Device info bar ── */
+  .device-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+  }
+  .device-mac {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .device-mac span { color: var(--cyan); }
+  .btn-forget {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--red);
+    background: none;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    padding: 0;
+  }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    width: 100%;
+    max-width: 340px;
+  }
+  .modal h3 {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--cyan);
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+  .modal label {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--mono);
+    display: block;
+    margin-bottom: 4px;
+    margin-top: 12px;
+  }
+  .modal input[type=time] {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: 8px;
     color: var(--text);
     font-family: var(--mono);
     font-size: 16px;
-    padding: 12px 14px;
-    outline: none;
-    transition: border-color 0.3s, box-shadow 0.3s;
-    letter-spacing: 1px;
   }
-
-  input[type="text"]:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(108,99,255,0.15);
-  }
-
-  input[type="text"]:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-
-  /* ── Buttons ── */
-  .btn {
-    font-family: var(--font);
-    font-weight: 600;
-    font-size: 16px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    padding: 12px 18px;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .btn::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, rgba(255,255,255,0.08), transparent);
-    pointer-events: none;
-  }
-
-  .btn:active { transform: translateY(1px); }
-
-  .btn-primary {
-    background: linear-gradient(135deg, var(--accent), #4a3fd4);
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(108,99,255,0.4);
-  }
-  .btn-primary:hover { box-shadow: 0 4px 20px rgba(108,99,255,0.6); }
-
-  .btn-danger {
-    background: linear-gradient(135deg, #e53935, #b71c1c);
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(229,57,53,0.35);
-  }
-
-  .btn-ghost {
-    background: #f9a825;
-    color: #000000;
-    border: 1px solid #fdd835;
-  }
-  .btn-ghost:hover { background: #fbc02d; border-color: #ffee58; color: #000000; }
-
-  /* Graded brightness buttons */
-  #btnDim    { background: linear-gradient(to bottom, #f9a825, #e65100); border-color: #ffa726; color: #000000; }
-  #btnBright { background: linear-gradient(to bottom, #ffee58, #f9a825); border-color: #ffee58; color: #000000; }
-  #btnFull   { background: linear-gradient(to bottom, #ffffff, #ffee58); border-color: #ffffff; color: #000000; }
-  #btnDim:hover    { background: linear-gradient(to bottom, #ffa726, #bf360c); }
-  #btnBright:hover { background: linear-gradient(to bottom, #fff176, #fbc02d); }
-  #btnFull:hover   { background: linear-gradient(to bottom, #ffffff, #fff176); }
-
-  .btn-sm { padding: 10px 14px; font-size: 15px; }
-
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
-
-  /* ── Brightness ── */
-  .brightness-row {
+  .modal input[type=time]:focus { outline: none; border-color: var(--cyan); }
+  .check-row {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 10px;
+    margin-top: 14px;
   }
+  .check-row input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--cyan); }
+  .check-row span { font-size: 13px; color: var(--text); }
+  .modal-btns { display: flex; gap: 8px; margin-top: 16px; }
+  .modal-btns .btn { flex: 1; margin-bottom: 0; }
 
-  .bri-label {
+  /* ── Toast ── */
+  #toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 20px;
+    border-radius: 20px;
     font-family: var(--mono);
-    font-size: 17px;
-    color: #fdd835;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 200;
     white-space: nowrap;
-    width: 28px;
-    text-align: right;
   }
+  #toast.show { opacity: 1; }
 
-  input[type="range"] {
-    flex: 1;
-    -webkit-appearance: none;
-    height: 6px;
-    background: #4a3800;
-    border-radius: 3px;
-    outline: none;
-    position: relative;
+  /* ── Pulse animation for connecting ── */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
   }
-
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 18px; height: 18px;
-    border-radius: 50%;
-    background: #fdd835;
-    box-shadow: 0 0 8px rgba(253,216,53,0.6);
-    cursor: pointer;
-    transition: box-shadow 0.2s;
-  }
-  input[type="range"]::-webkit-slider-thumb:hover {
-    box-shadow: 0 0 14px rgba(253,216,53,0.8);
-  }
-
-  .bri-presets {
-    display: flex;
-    gap: 6px;
-  }
-
-  /* ── Color grid ── */
-  .color-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-
-  .color-btn {
-    height: 56px;
-    border-radius: 8px;
-    border: 1.5px solid transparent;
-    cursor: pointer;
-    font-family: var(--font);
-    font-weight: 600;
-    font-size: 20px;
-    letter-spacing: 0.5px;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .color-btn::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 40%;
-    background: rgba(255,255,255,0.12);
-    border-radius: 6px 6px 0 0;
-  }
-
-  .color-btn:active { transform: scale(0.96); }
-  .color-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
-
-  /* ── Effects grid ── */
-  .effect-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-
-  .effect-btn {
-    height: 56px;
-    background: #006064;
-    border: 1px solid #00bcd4;
-    border-radius: 8px;
-    color: #000000;
-    font-family: var(--font);
-    font-weight: 600;
-    font-size: 20px;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .effect-btn::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 40%;
-    background: rgba(255,255,255,0.04);
-  }
-
-  .effect-btn:hover:not(:disabled) {
-    background: #00838f;
-    border-color: #00e5ff;
-    color: #000000;
-    box-shadow: 0 0 12px rgba(0,212,255,0.3);
-  }
-  .effect-btn.active {
-    background: #00acc1;
-    border-color: #00e5ff;
-    color: #000000;
-    box-shadow: 0 0 12px rgba(0,212,255,0.4);
-  }
-  .effect-btn:active:not(:disabled) { transform: scale(0.96); }
-  .effect-btn:disabled { opacity: 0.65; cursor: not-allowed; }
-
-  .effect-btn.off-btn {
-    background: #b71c1c;
-    border-color: #ff5252;
-    color: #000000;
-  }
-  .effect-btn.off-btn:hover:not(:disabled) {
-    background: #c62828;
-    border-color: #ff5252;
-    color: #000000;
-    box-shadow: 0 0 12px rgba(255,82,82,0.3);
-  }
-
-  /* ── Log line ── */
-  #logLine {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-dim);
-    text-align: center;
-    padding: 6px;
-    min-height: 22px;
-    transition: color 0.3s;
-  }
-
-  /* ── Footer ── */
-  footer {
-    text-align: center;
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--text-dim);
-    padding-top: 8px;
-    opacity: 0.5;
-  }
-
-  /* ── Responsive tweaks ── */
-  @media (max-width: 360px) {
-    .color-grid, .effect-grid { grid-template-columns: repeat(3, 1fr); }
-    h1 { font-size: 22px; }
-  }
-
-  /* ── Pulse animation for active ring ── */
-  @keyframes activePulse {
-    0%,100% { opacity: 1; }
-    50%      { opacity: 0.6; }
-  }
-  .logo-ring.active { animation: activePulse 1.5s ease-in-out infinite; }
+  .pulsing { animation: pulse 1.2s ease-in-out infinite; }
 </style>
 </head>
 <body>
-<div class="container">
 
-  <!-- Header -->
-  <header>
-    <div class="logo">
-      <div class="logo-ring" id="logoRing"></div>
-      <h1>AranyaCloud</h1>
-    </div>
-    <div class="subtitle">NeoPixel Ring Controller</div>
-  </header>
-
-  <!-- Status bar -->
-  <div class="status-bar">
-    <div class="status-dot" id="statusDot"></div>
-    <span id="statusText">Not connected</span>
-  </div>
-
-  <!-- Connect card -->
-  <div class="card">
-    <div class="card-title">Connection</div>
-    <div class="connect-row">
-      <div class="mac-input-wrap">
-        <input type="text" id="macInput"
-          placeholder="Device MAC (e.g. a1b2c3d4e5f6)"
-          maxlength="17"
-          autocomplete="off" autocorrect="off" spellcheck="false"/>
-      </div>
-      <button class="btn btn-ghost btn-sm" id="btnChange" style="display:none">Change</button>
-    </div>
-    <div style="display:flex; gap:8px;">
-      <button class="btn btn-primary" id="btnConnect" style="flex:1">Connect</button>
-    </div>
-    <div id="logLine">—</div>
-  </div>
-
-
-  <!-- Brightness card -->
-  <div class="card">
-    <div class="card-title">Brightness</div>
-    <div class="brightness-row">
-      <span class="bri-label" id="briVal">50</span>
-      <input type="range" id="seekBrightness" min="0" max="255" value="50" disabled/>
-    </div>
-    <div class="bri-presets" style="justify-content:flex-end;">
-      <button class="btn btn-ghost btn-sm bri-preset" id="btnDim"    data-cmd="dim"    data-bri="30"  disabled>Dim</button>
-      <button class="btn btn-ghost btn-sm bri-preset" id="btnBright" data-cmd="bright" data-bri="180" disabled>Bright</button>
-      <button class="btn btn-ghost btn-sm bri-preset" id="btnFull"   data-cmd="full"   data-bri="255" disabled>Full</button>
-    </div>
-  </div>
-
-  <!-- Colors card -->
-  <div class="card">
-    <div class="card-title">Colors</div>
-    <div class="color-grid">
-      <button class="color-btn" data-cmd="red"
-        style="background:linear-gradient(to bottom,#ff6666,#b71c1c);color:#fff;border-color:#ff8a80" disabled>Red</button>
-      <button class="color-btn" data-cmd="green"
-        style="background:linear-gradient(to bottom,#66bb6a,#1b5e20);color:#fff;border-color:#a5d6a7" disabled>Green</button>
-      <button class="color-btn" data-cmd="blue"
-        style="background:linear-gradient(to bottom,#64b5f6,#0d47a1);color:#fff;border-color:#90caf9" disabled>Blue</button>
-      <button class="color-btn" data-cmd="white"
-        style="background:linear-gradient(to bottom,#ffffff,#bdbdbd);color:#333;border-color:#eee" disabled>White</button>
-      <button class="color-btn" data-cmd="orange"
-        style="background:linear-gradient(to bottom,#ffb74d,#e65100);color:#fff;border-color:#ffcc80" disabled>Orange</button>
-      <button class="color-btn" data-cmd="yellow"
-        style="background:linear-gradient(to bottom,#fff176,#f57f17);color:#333;border-color:#fff9c4" disabled>Yellow</button>
-      <button class="color-btn" data-cmd="purple"
-        style="background:linear-gradient(to bottom,#ce93d8,#4a148c);color:#fff;border-color:#e1bee7" disabled>Purple</button>
-      <button class="color-btn" data-cmd="cyan"
-        style="background:linear-gradient(to bottom,#4dd0e1,#006064);color:#fff;border-color:#b2ebf2" disabled>Cyan</button>
-      <button class="color-btn" data-cmd="pink"
-        style="background:linear-gradient(to bottom,#f48fb1,#880e4f);color:#fff;border-color:#fce4ec" disabled>Pink</button>
-    </div>
-  </div>
-
-  <!-- Effects card -->
-  <div class="card">
-    <div class="card-title">Effects</div>
-    <div class="effect-grid">
-      <button class="effect-btn" data-cmd="solid"   disabled>Solid</button>
-      <button class="effect-btn" data-cmd="rainbow" disabled>Rainbow</button>
-      <button class="effect-btn" data-cmd="spin"    disabled>Spin</button>
-      <button class="effect-btn" data-cmd="spin2"   disabled>Spin 2</button>
-      <button class="effect-btn" data-cmd="breathe" disabled>Breathe</button>
-      <button class="effect-btn" data-cmd="pulse"   disabled>Pulse</button>
-      <button class="effect-btn" data-cmd="run"     disabled>Run</button>
-      <button class="effect-btn" data-cmd="wipe"    disabled>Wipe</button>
-      <button class="effect-btn" data-cmd="theater" disabled>Theater</button>
-      <button class="effect-btn" data-cmd="sparkle" disabled>Sparkle</button>
-      <button class="effect-btn" data-cmd="meteor"  disabled>Meteor</button>
-      <button class="effect-btn off-btn" data-cmd="off" disabled>OFF</button>
-    </div>
-  </div>
-
-  <footer>AranyaCloud &nbsp;·&nbsp; Cloud Control via MQTT</footer>
+<div class="header">
+  <div class="header-title">AranyaController V5</div>
+  <div class="header-sub">Remote Dashboard</div>
 </div>
 
+<!-- ── Setup screen (shown when no MAC saved) ── -->
+<div id="setupScreen">
+  <div class="card">
+    <div class="setup-title">First Time Setup</div>
+    <div class="setup-desc">
+      Connect your phone to the <strong>same WiFi</strong> as the device, then tap below.
+      After this one-time setup, this page works from <strong>anywhere</strong> using mobile data.
+    </div>
+    <button class="btn btn-cyan" id="btnDiscover" onclick="discoverDevice()">Discover Device on Local WiFi</button>
+  </div>
+</div>
+
+<!-- ── Main dashboard (shown after MAC discovered) ── -->
+<div id="mainScreen">
+
+  <!-- Device info bar -->
+  <div class="device-bar">
+    <div class="device-mac">MAC: <span id="macDisplay">—</span></div>
+    <button class="btn-forget" onclick="forgetDevice()">Forget Device</button>
+  </div>
+
+  <!-- Connection card -->
+  <div class="card">
+    <div class="status-row">
+      <div class="indicator" id="statusDot"></div>
+      <span id="statusText">Disconnected</span>
+    </div>
+    <button class="btn btn-green" id="btnConnect" onclick="toggleConnect()">Connect</button>
+  </div>
+
+  <!-- Clock card -->
+  <div class="card">
+    <div class="card-label">Device Clock</div>
+    <div id="tvDate">--/--/----</div>
+    <div id="tvTime">--:-- --</div>
+    <button class="btn btn-cyan" id="btnSync" onclick="syncTime()" disabled>Sync Phone Time to Device</button>
+  </div>
+
+  <!-- Output status card -->
+  <div class="card">
+    <div class="card-label">Output Status</div>
+    <div class="output-grid">
+      <div class="output-cell">
+        <div class="ol">LIGHT</div>
+        <div class="ov" id="tvLight">---</div>
+      </div>
+      <div class="output-cell">
+        <div class="ol">PUMP</div>
+        <div class="ov" id="tvPump">---</div>
+      </div>
+      <div class="output-cell">
+        <div class="ol">WATER</div>
+        <div class="ov" id="tvWater">---</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trigger card -->
+  <div class="card">
+    <div class="card-label">Manual Trigger</div>
+    <div class="btn-row">
+      <button class="btn btn-yellow" id="btnLight" onclick="triggerLight()" disabled>Trigger Light</button>
+      <button class="btn btn-blue"   id="btnPump"  onclick="triggerPump()"  disabled>Trigger Pump</button>
+    </div>
+  </div>
+
+  <!-- Schedules card -->
+  <div class="card">
+    <div class="card-label">Schedules</div>
+    <div class="sched-title light">Light</div>
+    <div id="lightSlots"></div>
+    <div class="sched-title pump">Pump</div>
+    <div id="pumpSlots"></div>
+    <button class="btn btn-red" id="btnClearAll" onclick="clearAllSchedules()" disabled style="margin-top:10px">Clear All Schedules</button>
+  </div>
+
+</div><!-- end mainScreen -->
+
+<!-- Light schedule modal -->
+<div class="modal-overlay" id="lightModal">
+  <div class="modal">
+    <h3 id="lightModalTitle">Light Schedule</h3>
+    <label>ON Time</label>
+    <input type="time" id="lightOnTime">
+    <label>OFF Time</label>
+    <input type="time" id="lightOffTime">
+    <div class="check-row">
+      <input type="checkbox" id="lightEnabled" checked>
+      <span>Enabled</span>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost"  onclick="closeLightModal()">Cancel</button>
+      <button class="btn btn-yellow" onclick="saveLightSchedule()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Pump schedule modal -->
+<div class="modal-overlay" id="pumpModal">
+  <div class="modal">
+    <h3 id="pumpModalTitle">Pump Schedule</h3>
+    <label>ON Time (runs 2 min)</label>
+    <input type="time" id="pumpOnTime">
+    <div class="check-row">
+      <input type="checkbox" id="pumpEnabled" checked>
+      <span>Enabled</span>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closePumpModal()">Cancel</button>
+      <button class="btn btn-blue"  onclick="savePumpSchedule()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- MQTT.js via CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.3.4/mqtt.min.js"></script>
+
 <script>
-// ── Config ────────────────────────────────────────────
+// ── EMQX broker config ────────────────────────────────────────────
 const BROKER_HOST = 'o2f8f1bb.ala.asia-southeast1.emqxsl.com';
-const BROKER_PORT = 8084;   // WSS port on EMQX serverless
+const BROKER_PORT = 8084;        // WSS port on EMQX serverless
 const BROKER_USER = 'AranyaAdmin';
 const BROKER_PASS = '123Smart@';
-const STORAGE_KEY = 'aranyacloud_mac';
+const LOCAL_URL   = 'http://aranya-ctrl.local';
 
-// ── State ─────────────────────────────────────────────
-let mqttClient      = null;
-let brokerConnected = false;
-let deviceOnline    = false;
-let topicCmd        = '';
-let topicState      = '';
-let topicStatus     = '';
+// ── State ─────────────────────────────────────────────────────────
+let mqttClient  = null;
+let connected   = false;
+let deviceMAC   = null;
+let topicCmd    = null;
+let topicState  = null;
+let lastState   = null;
+let editSlot    = -1;
 
+// ── Init ──────────────────────────────────────────────────────────
+window.onload = function() {
+  deviceMAC = localStorage.getItem('aranya_mac');
+  if (deviceMAC) {
+    showMainScreen();
+  }
+};
 
-// ── DOM refs ──────────────────────────────────────────
-const macInput   = document.getElementById('macInput');
-const btnConnect = document.getElementById('btnConnect');
-const btnChange  = document.getElementById('btnChange');
-const statusDot  = document.getElementById('statusDot');
-const statusText = document.getElementById('statusText');
-const logLine    = document.getElementById('logLine');
-const seekBri    = document.getElementById('seekBrightness');
-const briVal     = document.getElementById('briVal');
-const logoRing   = document.getElementById('logoRing');
+// ── Setup screen ──────────────────────────────────────────────────
+const KNOWN_MAC = '2805A533283C'; // fallback if mDNS fails
 
-const allControls = document.querySelectorAll(
-  '.color-btn, .effect-btn, .bri-preset, #seekBrightness'
-);
-
-// ── Restore saved MAC ─────────────────────────────────
-const savedMac = localStorage.getItem(STORAGE_KEY) || 'fce8c0a5b350';
-if (savedMac) {
-  macInput.value    = savedMac;
-  macInput.disabled = true;
-  btnChange.style.display = 'inline-flex';
+async function discoverDevice() {
+  const btn = document.getElementById('btnDiscover');
+  btn.textContent = 'Discovering…';
+  btn.disabled = true;
+  try {
+    const res = await fetch(`${LOCAL_URL}/state`, {
+      signal: AbortSignal.timeout(6000)
+    });
+    if (!res.ok) throw new Error('Bad response');
+    const data = await res.json();
+    if (!data.mac) throw new Error('No MAC in response');
+    saveMac(data.mac);
+    toast('Device found: ' + data.mac);
+    showMainScreen();
+  } catch(e) {
+    // mDNS failed (common on Android/iOS) — use known MAC directly
+    saveMac(KNOWN_MAC);
+    toast('Using saved device MAC');
+    showMainScreen();
+  }
 }
 
-btnChange.addEventListener('click', () => {
-  macInput.disabled = false;
-  macInput.focus();
-  btnChange.style.display = 'none';
-});
-
-// ── Build topics ──────────────────────────────────────
-function buildTopics(mac) {
-  const m = mac.replace(/:/g,'').toLowerCase();
-  topicCmd    = `aranyasmart/${m}/cmd`;
-  topicState  = `aranyasmart/${m}/state`;
-  topicStatus = `aranyasmart/${m}/status`;
+function saveMac(mac) {
+  deviceMAC  = mac.replace(/:/g, '').toUpperCase();
+  topicCmd   = `aranyasmart/${deviceMAC}/cmd`;
+  topicState = `aranyasmart/${deviceMAC}/state`;
+  localStorage.setItem('aranya_mac', deviceMAC);
+  document.getElementById('macDisplay').textContent = deviceMAC;
 }
 
-// ── Connect ───────────────────────────────────────────
-btnConnect.addEventListener('click', () => {
-  if (brokerConnected) { disconnect(); return; }
+function forgetDevice() {
+  if (!confirm('Forget this device? You will need to rediscover it.')) return;
+  localStorage.removeItem('aranya_mac');
+  if (mqttClient) mqttClient.end(true);
+  mqttClient = null;
+  connected  = false;
+  deviceMAC  = null;
+  document.getElementById('setupScreen').style.display = 'block';
+  document.getElementById('mainScreen').style.display  = 'none';
+}
 
-  const mac = macInput.value.trim().replace(/:/g,'').toLowerCase();
-  if (mac.length < 12) { setLog('Enter a valid 12-character MAC', 'warn'); return; }
+function showMainScreen() {
+  topicCmd   = `aranyasmart/${deviceMAC}/cmd`;
+  topicState = `aranyasmart/${deviceMAC}/state`;
+  document.getElementById('macDisplay').textContent    = deviceMAC;
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('mainScreen').style.display  = 'block';
+  renderEmptySlots();
+}
 
-  localStorage.setItem(STORAGE_KEY, mac);
-  macInput.disabled = true;
-  btnChange.style.display = 'none';
-  buildTopics(mac);
-  connect(mac);
-});
+// ── MQTT connection ───────────────────────────────────────────────
+function toggleConnect() {
+  if (connected) {
+    mqttDisconnect();
+  } else {
+    mqttConnect();
+  }
+}
 
-function connect(mac) {
-  setStatus('Connecting to broker…', 'warn');
-  btnConnect.textContent = 'Connecting…';
-  btnConnect.disabled    = true;
+function mqttConnect() {
+  setStatus('Connecting…', 'warn');
+  document.getElementById('btnConnect').disabled = true;
 
-  const clientId = 'aranyacloud-web-' + Math.random().toString(36).slice(2, 9);
+  const clientId = 'AranyaWeb-' + Math.random().toString(16).substr(2, 8);
   const url = `wss://${BROKER_HOST}:${BROKER_PORT}/mqtt`;
-  console.log('MQTT connecting to:', url);
-  setLog('Connecting to broker…');
 
   mqttClient = mqtt.connect(url, {
-    clientId,
-    username:     BROKER_USER,
-    password:     BROKER_PASS,
-    keepalive:    60,
-    reconnectPeriod: 0,   // manual reconnect only
-    connectTimeout: 10000,
+    clientId:  clientId,
+    username:  BROKER_USER,
+    password:  BROKER_PASS,
+    clean:     true,
+    reconnectPeriod: 0,   // no auto-reconnect — user controls this
+    connectTimeout:  8000
   });
 
   mqttClient.on('connect', () => {
-    brokerConnected = true;
-    btnConnect.textContent = 'Disconnect';
-    btnConnect.disabled    = false;
-    btnChange.style.display = 'none';
-    setLog('Broker connected — waiting for device…', 'warn');
-
-    mqttClient.subscribe([topicStatus, topicState], { qos: 1 });
+    connected = true;
+    setStatus('Connected', 'on');
+    document.getElementById('btnConnect').textContent = 'Disconnect';
+    document.getElementById('btnConnect').disabled    = false;
+    setControlsEnabled(true);
+    mqttClient.subscribe(topicState, { qos: 0 });
+    // Request current state
+    publish({ cmd: 'get_state' });
   });
 
   mqttClient.on('message', (topic, payload) => {
-    const msg = payload.toString().trim();
-    if (topic === topicStatus) {
-      deviceOnline = msg === 'online';
-      if (deviceOnline) {
-        setStatus('Device online', 'online');
-        enableControls(true);
-        logoRing.classList.add('active');
-        setLog('Ready');
-      } else {
-        setStatus('Device offline', 'offline');
-        enableControls(false);
-        logoRing.classList.remove('active');
-        setLog('Device is offline');
-      }
-    } else if (topic === topicState) {
-      const briMatch = msg.match(/"brightness"\s*:\s*(\d+)/);
-      if (briMatch) {
-        const b = parseInt(briMatch[1]);
-        seekBri.value    = b;
-        briVal.textContent = b;
-      }
-      const effMatch = msg.match(/"effect"\s*:\s*"([^"]+)"/);
-      if (effMatch) highlightEffect(effMatch[1]);
+    if (topic === topicState) {
+      try {
+        const data = JSON.parse(payload.toString());
+        applyState(data);
+      } catch(e) { /* ignore */ }
     }
   });
 
   mqttClient.on('error', (err) => {
-    setLog('Error: ' + (err.message || err), 'warn');
-    console.error('MQTT error:', err);
-  });
-
-  mqttClient.on('reconnect', () => {
-    setLog('Retrying connection…', 'warn');
+    setStatus('Error: ' + err.message, 'off');
+    document.getElementById('btnConnect').disabled = false;
+    toast('Connection error');
   });
 
   mqttClient.on('close', () => {
-    brokerConnected = false;
-    deviceOnline    = false;
-    enableControls(false);
-    logoRing.classList.remove('active');
-    setStatus('Disconnected', 'offline');
-    btnConnect.textContent = 'Connect';
-    btnConnect.disabled    = false;
-    btnChange.style.display = 'inline-flex';
-    macInput.disabled = true;
-    setLog('Disconnected');
-    clearActiveEffect();
+    if (connected) {
+      connected = false;
+      setStatus('Disconnected', 'off');
+      document.getElementById('btnConnect').textContent = 'Connect';
+      document.getElementById('btnConnect').disabled    = false;
+      setControlsEnabled(false);
+      resetDisplay();
+    }
   });
 }
 
-function disconnect() {
-  if (mqttClient) { mqttClient.end(true); mqttClient = null; }
+function mqttDisconnect() {
+  if (mqttClient) {
+    mqttClient.end(true);
+    mqttClient = null;
+  }
+  connected = false;
+  setStatus('Disconnected', 'off');
+  document.getElementById('btnConnect').textContent = 'Connect';
+  setControlsEnabled(false);
+  resetDisplay();
 }
 
-// ── Publish ───────────────────────────────────────────
-function publish(cmd) {
-  if (!mqttClient || !brokerConnected) return;
-  mqttClient.publish(topicCmd, cmd, { qos: 1 });
-  setLog('Sent: ' + cmd);
+function publish(payload) {
+  if (!mqttClient || !connected) { toast('Not connected'); return; }
+  mqttClient.publish(topicCmd, JSON.stringify(payload), { qos: 0, retain: false });
 }
 
-// ── Brightness seekbar ────────────────────────────────
-seekBri.addEventListener('input', () => {
-  briVal.textContent = seekBri.value;
-});
-seekBri.addEventListener('change', () => {
-  publish('b,' + seekBri.value);
-});
+// ── Apply state ───────────────────────────────────────────────────
+function applyState(s) {
+  lastState = s;
 
-// ── Brightness presets ────────────────────────────────
-document.querySelectorAll('.bri-preset').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const bri = parseInt(btn.dataset.bri);
-    seekBri.value = bri;
-    briVal.textContent = bri;
-    publish(btn.dataset.cmd);
+  // Clock
+  if (s.time) {
+    const [datePart, timePart] = s.time.split(' ');
+    const [yr, mo, dy] = datePart.split('-');
+    document.getElementById('tvDate').textContent = `${dy}/${mo}/${yr}`;
+    const [hh, mm] = timePart.split(':');
+    let h = parseInt(hh);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    if (h === 0) h = 12; else if (h > 12) h -= 12;
+    document.getElementById('tvTime').textContent =
+      `${String(h).padStart(2,'0')}:${mm} ${ampm}`;
+  }
+
+  setOutput('tvLight', s.light);
+  setOutput('tvPump',  s.pump);
+
+  const waterOk = s.water === 'ok';
+  const wEl = document.getElementById('tvWater');
+  wEl.textContent = waterOk ? 'OK' : 'LOW';
+  wEl.className   = 'ov' + (waterOk ? ' on' : '');
+
+  if (s.lightSchedules) renderLightSlots(s.lightSchedules);
+  if (s.pumpSchedules)  renderPumpSlots(s.pumpSchedules);
+}
+
+function setOutput(id, state) {
+  const el = document.getElementById(id);
+  el.textContent = state ? 'ON' : 'OFF';
+  el.className   = 'ov' + (state ? ' on' : '');
+}
+
+// ── Schedule rendering ────────────────────────────────────────────
+function renderLightSlots(slots) {
+  const c = document.getElementById('lightSlots');
+  c.innerHTML = '';
+  slots.forEach((s, i) => {
+    const val = s.enabled
+      ? `${pad(s.onH)}:${pad(s.onM)} – ${pad(s.offH)}:${pad(s.offM)}`
+      : 'Not set';
+    c.innerHTML += `
+      <div class="slot-row">
+        <div class="slot-info">
+          <div class="slot-num">SLOT ${i+1}</div>
+          <div class="slot-val">${val}</div>
+        </div>
+        <div class="slot-btns">
+          <button class="btn btn-yellow" onclick="openLightModal(${i})" ${connected?'':'disabled'}>Set</button>
+          <button class="btn btn-ghost"  onclick="clearLightSlot(${i})" ${connected?'':'disabled'}>Clear</button>
+        </div>
+      </div>`;
   });
-});
+}
 
-// ── Color buttons ─────────────────────────────────────
-document.querySelectorAll('.color-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    publish(btn.dataset.cmd);
-    clearActiveEffect();
-  });
-});
-
-// ── Effect buttons ────────────────────────────────────
-document.querySelectorAll('.effect-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    publish(btn.dataset.cmd);
-    if (btn.dataset.cmd !== 'off') highlightEffect(btn.dataset.cmd);
-    else clearActiveEffect();
-  });
-});
-
-function highlightEffect(eff) {
-  document.querySelectorAll('.effect-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.cmd === eff);
+function renderPumpSlots(slots) {
+  const c = document.getElementById('pumpSlots');
+  c.innerHTML = '';
+  slots.forEach((s, i) => {
+    const val = s.enabled ? `${pad(s.onH)}:${pad(s.onM)}  (2 min run)` : 'Not set';
+    c.innerHTML += `
+      <div class="slot-row">
+        <div class="slot-info">
+          <div class="slot-num">SLOT ${i+1}</div>
+          <div class="slot-val">${val}</div>
+        </div>
+        <div class="slot-btns">
+          <button class="btn btn-blue"  onclick="openPumpModal(${i})" ${connected?'':'disabled'}>Set</button>
+          <button class="btn btn-ghost" onclick="clearPumpSlot(${i})" ${connected?'':'disabled'}>Clear</button>
+        </div>
+      </div>`;
   });
 }
 
-function clearActiveEffect() {
-  document.querySelectorAll('.effect-btn').forEach(b => b.classList.remove('active'));
+function renderEmptySlots() {
+  renderLightSlots([{},{},{},{}].slice(0,2).map(() => ({enabled:false})));
+  renderPumpSlots( [{},{},{},{}].map(() => ({enabled:false})));
 }
 
-// ── Enable / disable controls ─────────────────────────
-function enableControls(on) {
-  allControls.forEach(el => el.disabled = !on);
+// ── Commands ──────────────────────────────────────────────────────
+function triggerLight() { publish({ cmd: 'light_trigger' }); toast('Light triggered'); }
+function triggerPump()  { publish({ cmd: 'pump_trigger'  }); toast('Pump triggered');  }
+
+function syncTime() {
+  const now = new Date();
+  publish({
+    cmd:   'set_time',
+    year:  now.getFullYear(),
+    month: now.getMonth() + 1,
+    day:   now.getDate(),
+    hour:  now.getHours(),
+    min:   now.getMinutes(),
+    sec:   now.getSeconds()
+  });
+  toast('Time synced');
 }
 
-// ── Status helpers ────────────────────────────────────
+function clearAllSchedules() {
+  if (!confirm('Clear all schedules on device?')) return;
+  publish({ cmd: 'clear_schedule' });
+  toast('All schedules cleared');
+}
+
+// ── Light modal ───────────────────────────────────────────────────
+function openLightModal(slot) {
+  editSlot = slot;
+  document.getElementById('lightModalTitle').textContent = `Light Schedule — Slot ${slot+1}`;
+  const s = lastState?.lightSchedules?.[slot];
+  if (s && s.enabled) {
+    document.getElementById('lightOnTime').value   = `${pad(s.onH)}:${pad(s.onM)}`;
+    document.getElementById('lightOffTime').value  = `${pad(s.offH)}:${pad(s.offM)}`;
+    document.getElementById('lightEnabled').checked = true;
+  } else {
+    document.getElementById('lightOnTime').value   = '06:00';
+    document.getElementById('lightOffTime').value  = '22:00';
+    document.getElementById('lightEnabled').checked = false;
+  }
+  document.getElementById('lightModal').classList.add('show');
+}
+function closeLightModal() { document.getElementById('lightModal').classList.remove('show'); }
+
+function saveLightSchedule() {
+  const on  = document.getElementById('lightOnTime').value.split(':');
+  const off = document.getElementById('lightOffTime').value.split(':');
+  const en  = document.getElementById('lightEnabled').checked;
+  closeLightModal();
+  publish({
+    cmd: 'set_schedule', type: 'light', index: editSlot,
+    onH: parseInt(on[0]), onM: parseInt(on[1]),
+    offH: parseInt(off[0]), offM: parseInt(off[1]),
+    enabled: en
+  });
+  toast(`Light slot ${editSlot+1} saved`);
+}
+
+function clearLightSlot(slot) {
+  publish({ cmd:'set_schedule', type:'light', index:slot,
+            onH:0, onM:0, offH:0, offM:0, enabled:false });
+  toast(`Light slot ${slot+1} cleared`);
+}
+
+// ── Pump modal ────────────────────────────────────────────────────
+function openPumpModal(slot) {
+  editSlot = slot;
+  document.getElementById('pumpModalTitle').textContent = `Pump Schedule — Slot ${slot+1}`;
+  const s = lastState?.pumpSchedules?.[slot];
+  if (s && s.enabled) {
+    document.getElementById('pumpOnTime').value    = `${pad(s.onH)}:${pad(s.onM)}`;
+    document.getElementById('pumpEnabled').checked = true;
+  } else {
+    document.getElementById('pumpOnTime').value    = '08:00';
+    document.getElementById('pumpEnabled').checked = false;
+  }
+  document.getElementById('pumpModal').classList.add('show');
+}
+function closePumpModal() { document.getElementById('pumpModal').classList.remove('show'); }
+
+function savePumpSchedule() {
+  const on = document.getElementById('pumpOnTime').value.split(':');
+  const en = document.getElementById('pumpEnabled').checked;
+  closePumpModal();
+  publish({
+    cmd: 'set_schedule', type: 'pump', index: editSlot,
+    onH: parseInt(on[0]), onM: parseInt(on[1]),
+    enabled: en
+  });
+  toast(`Pump slot ${editSlot+1} saved`);
+}
+
+function clearPumpSlot(slot) {
+  publish({ cmd:'set_schedule', type:'pump', index:slot,
+            onH:0, onM:0, enabled:false });
+  toast(`Pump slot ${slot+1} cleared`);
+}
+
+// ── UI helpers ────────────────────────────────────────────────────
 function setStatus(msg, state) {
-  statusText.textContent = msg;
-  statusDot.className    = 'status-dot ' + (state || '');
-  statusText.style.color = state === 'online'  ? 'var(--online)'  :
-                           state === 'offline' ? 'var(--offline)' :
-                           state === 'warn'    ? 'var(--warn)'    : 'var(--text-dim)';
+  const dot  = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  text.textContent = msg;
+  text.className   = state === 'on' ? 'on' : state === 'warn' ? 'warn' : '';
+  dot.className    = 'indicator' + (state === 'on' ? ' on' : state === 'warn' ? ' warn' : '');
 }
 
-function setLog(msg) {
-  logLine.textContent = msg;
+function setControlsEnabled(en) {
+  ['btnLight','btnPump','btnSync','btnClearAll'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !en;
+  });
+  // Re-render slots to update their buttons
+  if (lastState) {
+    if (lastState.lightSchedules) renderLightSlots(lastState.lightSchedules);
+    if (lastState.pumpSchedules)  renderPumpSlots(lastState.pumpSchedules);
+  }
 }
 
+function resetDisplay() {
+  document.getElementById('tvDate').textContent = '--/--/----';
+  document.getElementById('tvTime').textContent = '--:-- --';
+  ['tvLight','tvPump','tvWater'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = '---'; el.className = 'ov'; }
+  });
+  renderEmptySlots();
+}
 
+function pad(n) { return String(n||0).padStart(2,'0'); }
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// Close modals on overlay tap
+['lightModal','pumpModal'].forEach(id => {
+  document.getElementById(id).addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('show');
+  });
+});
 </script>
 </body>
 </html>
